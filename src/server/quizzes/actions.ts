@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/server/db";
-import { quizzes as quizTable } from "@/server/db/schema";
+import { questions, quizzes as quizTable } from "@/server/db/schema";
 import { redirect } from "next/navigation";
 import { validateRequest } from "../auth/validate-request";
 import { NextResponse } from "next/server";
@@ -44,4 +44,12 @@ export async function deleteQuiz(quizId: number) {
   await db
     .delete(quizTable)
     .where(and(eq(quizTable.id, quizId), eq(quizTable.createdById, user.id)));
+}
+
+export async function addQuestion(quizId: number) {
+  const { user } = await validateRequest();
+  if (!user) {
+    return new NextResponse(null, { status: 400 });
+  }
+  await db.insert(questions).values({ quizId, text: "", answers: [] });
 }

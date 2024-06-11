@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   updateQuiz,
   deleteQuiz as deleteAction,
+  addQuestion as addQuestionAction,
 } from "@/server/quizzes/actions";
 import { useRouter } from "next/navigation";
 
@@ -29,6 +30,11 @@ export default function QuizHeader({
   const deleteQuiz = async () => {
     await deleteAction(quiz.id);
     router.push("/");
+  };
+
+  const addQuestion = async () => {
+    await addQuestionAction(quiz.id);
+    router.refresh();
   };
 
   return (
@@ -90,7 +96,10 @@ export default function QuizHeader({
             </motion.div>
           )}
         </AnimatePresence>
-        <button className="rounded-full px-4 py-1 hover:bg-black/10">
+        <button
+          className="rounded-full px-4 py-1 hover:bg-black/10"
+          onClick={addQuestion}
+        >
           Добавить вопрос
         </button>
       </div>
