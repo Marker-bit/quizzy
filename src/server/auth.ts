@@ -1,90 +1,80 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import {
-  getServerSession,
-  type DefaultSession,
-  type NextAuthOptions,
-} from "next-auth";
-import { type Adapter } from "next-auth/adapters";
-import EmailProvider from "next-auth/providers/email";
+import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
+import { eq } from "drizzle-orm";
+import { Lucia, generateIdFromEntropySize } from "lucia";
+import { TimeSpan, createDate } from "oslo";
+import { db } from "./db";
+import { sessions, users, verificationTokens } from "./db/schema";
+import { sendVerificationEmail } from "./email";
 
-import { env } from "@/env";
-import { db } from "@/server/db";
-import {
-  accounts,
-  sessions,
-  users,
-  verificationTokens,
-} from "@/server/db/schema";
+const adapter = new DrizzleSQLiteAdapter(db, sessions, users);
 
-/**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
- */
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      // ...other properties
-      // role: UserRole;
-    } & DefaultSession["user"];
+export const lucia = new Lucia(adapter, {
+  sessionCookie: {
+    expires: false,
+    attributes: {
+      secure: process.env.NODE_ENV === "production",
+    },
+  },
+  getUserAttributes: (attributes) => {
+    return {
+      emailVerified: attributes.email_verified,
+      email: attributes.email,
+    };
+  },
+});
+
+// IMPORTANT!
+declare module "lucia" {
+  interface Register {
+    Lucia: typeof lucia;
+    DatabaseUserAttributes: {
+      email: string;
+      email_verified: boolean;
+    };
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
-export const authOptions: NextAuthOptions = {
-  callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
-  },
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }) as Adapter,
-  providers: [
-    EmailProvider({
-      server: {
-        host: env.EMAIL_SERVER_HOST,
-        port: env.EMAIL_SERVER_PORT,
-        auth: {
-          user: env.EMAIL_SERVER_USER,
-          pass: env.EMAIL_SERVER_PASSWORD,
-        },
-      },
-      from: env.EMAIL_FROM,
-    })
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
-  ],
-};
+export async function createEmailVerificationToken(
+  userId: string,
+  email: string,
+): Promise<string> {
+  await db
+    .delete(verificationTokens)
+    .where(eq(verificationTokens.userId, userId));
+  const tokenId = generateIdFromEntropySize(25); // 40 characters long
+  await db.insert(verificationTokens).values({
+    id: tokenId,
+    userId: userId,
+    email,
+    expiresAt: createDate(new TimeSpan(2, "h")),
+  });
+  return tokenId;
+}
 
-/**
- * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
- *
- * @see https://next-auth.js.org/configuration/nextjs
- */
-export const getServerAuthSession = () => getServerSession(authOptions);
+export async function createAccount(email: string, host: string) {
+  const userId = generateIdFromEntropySize(10); // 16 characters long
+
+  await db.insert(users).values({
+    id: userId,
+    email,
+  });
+
+  const verificationToken = await createEmailVerificationToken(userId, email);
+  const verificationLink = host + "/email-verification/" + verificationToken;
+  await sendVerificationEmail(email, verificationLink);
+}
+
+export async function signIn(email: string, host: string) {
+  console.log("Signing in " + email);
+  const usersList = await db.select().from(users).where(eq(users.email, email));
+  if (!usersList.length || !usersList[0]) {
+    console.log("User not found");
+    await createAccount(email, host);
+  } else {
+    console.log("User found");
+    const userId = usersList[0].id;
+    const verificationToken = await createEmailVerificationToken(userId, email);
+    const verificationLink = host + "/email-verification/" + verificationToken;
+    await sendVerificationEmail(email, verificationLink);
+  }
+}
