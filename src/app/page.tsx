@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { validateRequest } from "@/server/validate-request";
+import { validateRequest } from "@/server/auth/validate-request";
 import Link from "next/link";
 
 export default async function HomePage() {

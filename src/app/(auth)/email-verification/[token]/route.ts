@@ -1,4 +1,4 @@
-import { lucia } from "@/server/auth";
+import { lucia } from "@/server/auth/auth";
 import { db } from "@/server/db";
 import { users, verificationTokens } from "@/server/db/schema";
 import { eq } from "drizzle-orm";

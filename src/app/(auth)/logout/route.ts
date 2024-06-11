@@ -1,5 +1,5 @@
-import { lucia } from "@/server/auth";
-import { validateRequest } from "@/server/validate-request";
+import { lucia } from "@/server/auth/auth";
+import { validateRequest } from "@/server/auth/validate-request";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";

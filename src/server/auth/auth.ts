@@ -2,8 +2,8 @@ import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
 import { eq } from "drizzle-orm";
 import { Lucia, generateIdFromEntropySize } from "lucia";
 import { TimeSpan, createDate } from "oslo";
-import { db } from "./db";
-import { sessions, users, verificationTokens } from "./db/schema";
+import { db } from "../db";
+import { sessions, users, verificationTokens } from "../db/schema";
 import { sendVerificationEmail } from "./email";
 
 const adapter = new DrizzleSQLiteAdapter(db, sessions, users);
