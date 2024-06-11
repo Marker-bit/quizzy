@@ -13,8 +13,8 @@ export const quizzes = createTable(
   "quiz",
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: text("name", { length: 256 }),
-    description: text("description", { length: 256 }),
+    name: text("name", { length: 256 }).default(""),
+    description: text("description", { length: 256 }).default(""),
     createdById: text("createdById", { length: 255 })
       .notNull()
       .references(() => users.id),
