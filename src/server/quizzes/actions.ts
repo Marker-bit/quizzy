@@ -35,3 +35,13 @@ export async function updateQuiz(
     .set({ name, description })
     .where(and(eq(quizTable.id, quizId), eq(quizTable.createdById, user.id)));
 }
+
+export async function deleteQuiz(quizId: number) {
+  const { user } = await validateRequest();
+  if (!user) {
+    return new NextResponse(null, { status: 400 });
+  }
+  await db
+    .delete(quizTable)
+    .where(and(eq(quizTable.id, quizId), eq(quizTable.createdById, user.id)));
+}

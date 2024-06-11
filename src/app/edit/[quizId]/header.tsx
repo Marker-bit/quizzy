@@ -3,7 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { updateQuiz } from "@/server/quizzes/actions";
+import {
+  updateQuiz,
+  deleteQuiz as deleteAction,
+} from "@/server/quizzes/actions";
 import { useRouter } from "next/navigation";
 
 export default function QuizHeader({
@@ -13,13 +16,19 @@ export default function QuizHeader({
 }) {
   const [name, setName] = useState(quiz.name ?? "");
   const [description, setDescription] = useState(quiz.description ?? "");
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const router = useRouter();
 
   const isChanged = name !== quiz.name || description !== quiz.description;
 
   const saveChanges = async () => {
     await updateQuiz(quiz.id, name, description);
-    await router.refresh();
+    router.refresh();
+  };
+
+  const deleteQuiz = async () => {
+    await deleteAction(quiz.id);
+    router.push("/");
   };
 
   return (
@@ -34,7 +43,7 @@ export default function QuizHeader({
               className="mr-1"
             >
               <button
-                className="mr-1 rounded-full px-4 py-1 hover:bg-black/10"
+                className="rounded-full px-4 py-1 hover:bg-black/10"
                 onClick={saveChanges}
               >
                 Сохранить
@@ -42,9 +51,45 @@ export default function QuizHeader({
             </motion.div>
           )}
         </AnimatePresence>
-        <button className="mr-1 rounded-full px-4 py-1 hover:bg-black/10">
-          Удалить
-        </button>
+        <AnimatePresence initial={false} mode="wait">
+          {deleteConfirm ? (
+            <motion.div
+              initial={{ opacity: 0, width: 0, filter: "blur(10px)" }}
+              animate={{ opacity: 1, width: "auto", filter: "blur(0px)" }}
+              exit={{ opacity: 0, width: 0, filter: "blur(10px)" }}
+              className="mr-1 whitespace-nowrap"
+              key="confirmDelete"
+            >
+              <motion.button
+                className="mr-1 overflow-hidden whitespace-nowrap rounded-full px-4 py-1 hover:bg-black/10"
+                onClick={deleteQuiz}
+              >
+                Вы уверены?
+              </motion.button>
+              <motion.button
+                className="overflow-hidden whitespace-nowrap rounded-full px-4 py-1 hover:bg-black/10"
+                onClick={() => setDeleteConfirm(!deleteConfirm)}
+              >
+                Отмена
+              </motion.button>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, width: 0, filter: "blur(10px)" }}
+              animate={{ opacity: 1, width: "auto", filter: "blur(0px)" }}
+              exit={{ opacity: 0, width: 0, filter: "blur(10px)" }}
+              className="mr-1"
+              key="delete"
+            >
+              <motion.button
+                className="overflow-hidden rounded-full px-4 py-1 hover:bg-black/10"
+                onClick={() => setDeleteConfirm(!deleteConfirm)}
+              >
+                Удалить
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <button className="rounded-full px-4 py-1 hover:bg-black/10">
           Добавить вопрос
         </button>
