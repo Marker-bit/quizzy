@@ -15,14 +15,10 @@ export async function sendVerificationEmail(
   email: string,
   verificationLink: string,
 ) {
-  console.log("Sending verification email to " + email);
-  console.log("Link: " + verificationLink);
-  console.log(env.EMAIL_SERVER_PASSWORD);
-
-  const resend = new Resend(env.EMAIL_SERVER_PASSWORD);
+  const resend = new Resend(env.RESEND_API_KEY);
 
   await resend.emails.send({
-    from: "onboarding@markerbit.ru",
+    from: env.EMAIL_FROM,
     to: email,
     subject: "Авторизация в Квиззи",
     react: <Email url={verificationLink} />,
