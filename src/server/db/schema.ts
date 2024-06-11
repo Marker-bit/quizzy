@@ -16,11 +16,12 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = sqliteTableCreator((name) => `quiz_app_${name}`);
 
-export const posts = createTable(
-  "post",
+export const quizzes = createTable(
+  "quiz",
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
     name: text("name", { length: 256 }),
+    description: text("description", { length: 256 }),
     createdById: text("createdById", { length: 255 })
       .notNull()
       .references(() => users.id),
@@ -28,11 +29,35 @@ export const posts = createTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: int("updatedAt", { mode: "timestamp" }),
+    isPublic: int("isPublic", { mode: "boolean" }).notNull().default(false),
   },
   (example) => ({
     createdByIdIdx: index("createdById_idx").on(example.createdById),
     nameIndex: index("name_idx").on(example.name),
-  })
+  }),
+);
+
+export const questions = createTable(
+  "question",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    text: text("text", { length: 256 }).notNull(),
+    imageUrl: text("imageUrl", { length: 256 }),
+    quizId: int("quizId", { mode: "number" })
+      .notNull()
+      .references(() => quizzes.id),
+    answers: text("answers", { mode: "json" }).notNull().$type<
+      {
+        id: number;
+        text: string;
+        imageUrl: string | null;
+        isCorrect: boolean;
+      }[]
+    >(),
+  },
+  (question) => ({
+    quizIdIdx: index("quizId_idx").on(question.quizId),
+  }),
 );
 
 export const users = createTable("user", {
@@ -73,7 +98,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_userId_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -91,7 +116,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_userId_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -107,5 +132,5 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
