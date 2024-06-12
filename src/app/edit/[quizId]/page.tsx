@@ -6,11 +6,13 @@ import { notFound } from "next/navigation";
 import Questions from "./questions";
 
 export default async function Page({ params }: { params: { quizId: string } }) {
-  const quiz = await db
-    .select()
-    .from(quizzes)
-    .where(eq(quizzes.id, parseInt(params.quizId)))
-    .get();
+  const quiz = (
+    await db
+      .select()
+      .from(quizzes)
+      .where(eq(quizzes.id, params.quizId))
+      .limit(1)
+  )[0];
 
   if (!quiz) {
     return notFound();

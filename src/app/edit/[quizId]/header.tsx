@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 export default function QuizHeader({
   quiz,
 }: {
-  quiz: { name: string | null; description: string | null; id: number };
+  quiz: { name: string | null; description: string | null; id: string };
 }) {
   const [name, setName] = useState(quiz.name ?? "");
   const [description, setDescription] = useState(quiz.description ?? "");

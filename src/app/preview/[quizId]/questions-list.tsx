@@ -10,10 +10,10 @@ export default function QuestionsList({
   questions,
 }: {
   questions: {
-    id: number;
+    id: string;
     text: string;
     imageUrl: string | null;
-    quizId: number;
+    quizId: string;
     answers: {
       id: number;
       text: string;

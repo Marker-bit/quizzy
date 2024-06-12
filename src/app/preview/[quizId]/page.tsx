@@ -6,11 +6,13 @@ import { notFound } from "next/navigation";
 import QuestionsList from "./questions-list";
 
 export default async function Page({ params }: { params: { quizId: string } }) {
-  const quiz = await db
-    .select()
-    .from(quizzes)
-    .where(eq(quizzes.id, parseInt(params.quizId)))
-    .get();
+  const quiz = (
+    await db
+      .select()
+      .from(quizzes)
+      .where(eq(quizzes.id, params.quizId))
+      .limit(1)
+  )[0];
 
   if (!quiz) {
     return notFound();
@@ -33,9 +35,9 @@ export default async function Page({ params }: { params: { quizId: string } }) {
   return (
     <div className="flex flex-col sm:items-center sm:pt-[20vh]">
       <div className="flex flex-col gap-2">
-        <h1 className="sm:text-center text-6xl font-bold">{quiz.name}</h1>
+        <h1 className="text-6xl font-bold sm:text-center">{quiz.name}</h1>
         {quiz.description && (
-          <p className="sm:text-center italic">{quiz.description}</p>
+          <p className="italic sm:text-center">{quiz.description}</p>
         )}
       </div>
       <QuestionsList questions={questionsList} />

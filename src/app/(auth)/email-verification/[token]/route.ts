@@ -27,11 +27,13 @@ export async function GET(
     });
   }
 
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, dbToken[0]!.userId))
-    .get();
+  const user = (
+    await db
+      .select()
+      .from(users)
+      .where(eq(users.id, dbToken[0]!.userId))
+      .limit(1)
+  )[0];
   if (!user || user.email !== dbToken[0]!.email) {
     return new Response(null, {
       status: 400,

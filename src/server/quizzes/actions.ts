@@ -13,16 +13,14 @@ export async function createQuiz() {
     return new NextResponse(null, { status: 400 });
   }
 
-  const quiz = await db
-    .insert(quizTable)
-    .values({ createdById: user.id })
-    .returning()
-    .get();
+  const quiz = (
+    await db.insert(quizTable).values({ createdById: user.id }).returning()
+  )[0]!;
   return redirect(`/edit/${quiz.id}`);
 }
 
 export async function updateQuiz(
-  quizId: number,
+  quizId: string,
   name: string,
   description: string,
 ) {
@@ -36,7 +34,7 @@ export async function updateQuiz(
     .where(and(eq(quizTable.id, quizId), eq(quizTable.createdById, user.id)));
 }
 
-export async function deleteQuiz(quizId: number) {
+export async function deleteQuiz(quizId: string) {
   const { user } = await validateRequest();
   if (!user) {
     return new NextResponse(null, { status: 400 });
@@ -46,7 +44,7 @@ export async function deleteQuiz(quizId: number) {
     .where(and(eq(quizTable.id, quizId), eq(quizTable.createdById, user.id)));
 }
 
-export async function addQuestion(quizId: number) {
+export async function addQuestion(quizId: string) {
   const { user } = await validateRequest();
   if (!user) {
     return new NextResponse(null, { status: 400 });
