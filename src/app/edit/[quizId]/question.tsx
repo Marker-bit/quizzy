@@ -38,6 +38,7 @@ export default function Question({
   const [answers, setAnswers] = useState(question.answers);
   const [shuffleAnswers, setShuffleAnswers] = useState(question.shuffleAnswers);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const router = useRouter();
 
   const isChanged =
@@ -91,7 +92,9 @@ export default function Question({
   };
 
   const deleteQ = async () => {
+    setDeleteLoading(true);
     await deleteQuestion(question.id);
+    setDeleteLoading(false);
     router.refresh();
   };
 
@@ -212,7 +215,31 @@ export default function Question({
           <Dices className="size-4" />
         </button>
         <button className="ml-2 rounded-xl bg-black/5 p-2" onClick={deleteQ}>
-          <Delete className="size-4" />
+          <AnimatePresence initial={false} mode="wait">
+            {deleteLoading ? (
+              <motion.div
+                key="loading-delete"
+                initial={{
+                  scale: 0,
+                }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Loader2 className="size-4 animate-spin" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="delete"
+                initial={{
+                  scale: 0,
+                }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Delete className="size-4" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </button>
       </div>
     </div>
