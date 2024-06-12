@@ -15,6 +15,7 @@ export async function updateQuestion(
     imageUrl: string | null;
     isCorrect: boolean;
   }[],
+  shuffleAnswers: boolean,
 ) {
   const { user } = await validateRequest();
   if (!user) {
@@ -45,7 +46,7 @@ export async function updateQuestion(
   }
   await db
     .update(questions)
-    .set({ text, answers })
+    .set({ text, answers, shuffleAnswers })
     .where(and(eq(questions.id, questionId)));
 }
 

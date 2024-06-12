@@ -1,9 +1,18 @@
 "use client";
 
-import { numberToLetter } from "@/lib/utils";
+import { cn, numberToLetter } from "@/lib/utils";
 import { deleteQuestion, updateQuestion } from "@/server/questions/actions";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Delete, Plus, Save, X } from "lucide-react";
+import {
+  Check,
+  Delete,
+  Dices,
+  Loader2,
+  Plus,
+  Save,
+  Shuffle,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,14 +31,18 @@ export default function Question({
       imageUrl: string | null;
       isCorrect: boolean;
     }[];
+    shuffleAnswers: boolean;
   };
 }) {
   const [text, setText] = useState(question.text);
   const [answers, setAnswers] = useState(question.answers);
+  const [shuffleAnswers, setShuffleAnswers] = useState(question.shuffleAnswers);
+  const [updateLoading, setUpdateLoading] = useState(false);
   const router = useRouter();
 
   const isChanged =
     text !== question.text ||
+    shuffleAnswers !== question.shuffleAnswers ||
     answers.length !== question.answers.length ||
     answers.find(
       (answer) =>
@@ -69,7 +82,10 @@ export default function Question({
       });
       return;
     }
-    await updateQuestion(question.id, text, answers);
+
+    setUpdateLoading(true);
+    await updateQuestion(question.id, text, answers, shuffleAnswers);
+    setUpdateLoading(false);
     toast.success("Вопрос успешно обновлен");
     router.refresh();
   };
@@ -147,7 +163,31 @@ export default function Question({
               exit={{ opacity: 0, filter: "blur(10px)" }}
               onClick={saveChanges}
             >
-              <Save className="size-4" />
+              <AnimatePresence initial={false} mode="wait">
+                {updateLoading ? (
+                  <motion.div
+                    key="loading-save"
+                    initial={{
+                      scale: 0,
+                    }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <Loader2 className="size-4 animate-spin" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="save"
+                    initial={{
+                      scale: 0,
+                    }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <Save className="size-4" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
           )}
         </AnimatePresence>
@@ -161,6 +201,15 @@ export default function Question({
           }
         >
           <Plus className="size-4" />
+        </button>
+        <button
+          className={cn(
+            "ml-2 rounded-xl p-2",
+            shuffleAnswers ? "bg-black/10" : "bg-black/5",
+          )}
+          onClick={() => setShuffleAnswers((a) => !a)}
+        >
+          <Dices className="size-4" />
         </button>
         <button className="ml-2 rounded-xl bg-black/5 p-2" onClick={deleteQ}>
           <Delete className="size-4" />

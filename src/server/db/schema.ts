@@ -53,6 +53,7 @@ export const questions = createTable("question", {
       isCorrect: boolean;
     }[]
   >(),
+  shuffleAnswers: boolean("shuffleAnswers").notNull().default(false),
 });
 
 export const questionsRelations = relations(questions, ({ one }) => ({

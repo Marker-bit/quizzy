@@ -17,6 +17,7 @@ export default function Questions({
       imageUrl: string | null;
       isCorrect: boolean;
     }[];
+    shuffleAnswers: boolean;
   }[];
 }) {
   return (
