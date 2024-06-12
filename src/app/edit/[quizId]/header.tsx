@@ -10,6 +10,7 @@ import {
 } from "@/server/quizzes/actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 export default function QuizHeader({
   quiz,
@@ -19,6 +20,8 @@ export default function QuizHeader({
   const [name, setName] = useState(quiz.name ?? "");
   const [description, setDescription] = useState(quiz.description ?? "");
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [addQuestionLoading, setAddQuestionLoading] = useState(false);
   const router = useRouter();
 
   const isChanged = name !== quiz.name || description !== quiz.description;
@@ -29,12 +32,16 @@ export default function QuizHeader({
   };
 
   const deleteQuiz = async () => {
+    setDeleteLoading(true);
     await deleteAction(quiz.id);
+    setDeleteLoading(false);
     router.push("/");
   };
 
   const addQuestion = async () => {
+    setAddQuestionLoading(true);
     await addQuestionAction(quiz.id);
+    setAddQuestionLoading(false);
     router.refresh();
   };
 
@@ -64,13 +71,24 @@ export default function QuizHeader({
               initial={{ opacity: 0, width: 0, filter: "blur(10px)" }}
               animate={{ opacity: 1, width: "auto", filter: "blur(0px)" }}
               exit={{ opacity: 0, width: 0, filter: "blur(10px)" }}
-              className="mr-1 whitespace-nowrap"
+              className="mr-1 flex whitespace-nowrap"
               key="confirmDelete"
             >
               <motion.button
-                className="mr-1 overflow-hidden whitespace-nowrap rounded-full px-4 py-1 hover:bg-black/10"
+                className="mr-1 flex items-center overflow-hidden whitespace-nowrap rounded-full px-4 py-1 hover:bg-black/10"
                 onClick={deleteQuiz}
               >
+                <AnimatePresence>
+                  {deleteLoading && (
+                    <motion.div
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                    >
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 Вы уверены?
               </motion.button>
               <motion.button
@@ -98,9 +116,20 @@ export default function QuizHeader({
           )}
         </AnimatePresence>
         <button
-          className="rounded-full px-4 py-1 hover:bg-black/10"
+          className="flex items-center rounded-full px-4 py-1 hover:bg-black/10"
           onClick={addQuestion}
         >
+          <AnimatePresence>
+            {addQuestionLoading && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+              >
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              </motion.div>
+            )}
+          </AnimatePresence>
           Добавить вопрос
         </button>
         <Link href={`/preview/${quiz.id}`}>
