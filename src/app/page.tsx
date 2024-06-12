@@ -13,14 +13,14 @@ export default async function HomePage() {
       <h1 className="text-6xl font-bold">Квиззи</h1>
       <p className="mt-2 text-3xl">Приложение для составления квизов</p>
       {user ? (
-        <div className="flex items-center gap-2 rounded-xl border bg-white pl-2 shadow-md">
+        <div className="flex items-center gap-2 rounded-xl border bg-white pl-2 shadow-md mt-4">
           <p>{user.email}</p>
           <Link href="/logout">
             <Button>Выйти</Button>
           </Link>
         </div>
       ) : (
-        <Link href="/login">
+        <Link href="/login" className="mt-4">
           <Button>Войти</Button>
         </Link>
       )}
