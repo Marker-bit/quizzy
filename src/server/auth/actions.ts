@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { signIn } from "./auth";
+import { env } from "@/env";
 
 export async function login(formData: FormData) {
   "use server";
@@ -11,6 +12,6 @@ export async function login(formData: FormData) {
   if (typeof email !== "string") return;
   if (!email.includes("@") || !email.includes(".")) return;
 
-  await signIn(email, "http://localhost:3000");
+  await signIn(email, env.HOST);
   return redirect("/login/email-sent");
 }
