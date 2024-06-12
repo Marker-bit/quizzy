@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 
 import { Inter } from "next/font/google";
@@ -17,7 +18,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${font.className}`}>
-      <body className="bg-amber-100">{children}</body>
+      <body className="bg-amber-100">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

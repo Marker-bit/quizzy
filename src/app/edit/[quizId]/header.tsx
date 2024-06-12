@@ -9,6 +9,7 @@ import {
   addQuestion as addQuestionAction,
 } from "@/server/quizzes/actions";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function QuizHeader({
   quiz,
@@ -102,6 +103,11 @@ export default function QuizHeader({
         >
           Добавить вопрос
         </button>
+        <Link href={`/preview/${quiz.id}`}>
+          <button className="rounded-full px-4 py-1 hover:bg-black/10">
+            Посмотреть
+          </button>
+        </Link>
       </div>
       <div className="flex flex-col justify-center text-center">
         <input

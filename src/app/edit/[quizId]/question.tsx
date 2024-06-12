@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Delete, Plus, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Question({
   question,
@@ -33,7 +34,10 @@ export default function Question({
     answers.find(
       (answer) =>
         answer.text !==
-        question.answers.find((qAnswer) => qAnswer.id === answer.id)?.text,
+          question.answers.find((qAnswer) => qAnswer.id === answer.id)?.text ||
+        answer.isCorrect !==
+          question.answers.find((qAnswer) => qAnswer.id === answer.id)
+            ?.isCorrect,
     );
 
   let nextAnswerId = answers.length
@@ -41,7 +45,32 @@ export default function Question({
     : 0;
 
   const saveChanges = async () => {
+    if (answers.length < 2) {
+      toast.error("Добавьте хотя бы два варианта ответа", {
+        description: "Вопрос должен иметь хотя бы два варианта ответа",
+      });
+      return;
+    }
+    if (!answers.find((a) => a.isCorrect)) {
+      toast.error("Выберите правильный вариант ответа", {
+        description: "Вы должны выбрать хотя бы один правильный вариант ответа",
+      });
+      return;
+    }
+    if (text.trim() === "") {
+      toast.error("Заполните текст вопроса", {
+        description: "Текст вопроса не может быть пустым",
+      });
+      return;
+    }
+    if (answers.find((a) => a.text.trim() === "")) {
+      toast.error("Заполните текст ответа", {
+        description: "Текст ответа не может быть пустым",
+      });
+      return;
+    }
     await updateQuestion(question.id, text, answers);
+    toast.success("Вопрос успешно обновлен");
     router.refresh();
   };
 
