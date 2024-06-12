@@ -55,10 +55,14 @@ export default function QuestionsList({
         const correctCount = questions[questionIndex]!.answers.filter(
           (a) => a.isCorrect,
         ).length;
-        if (lastAnswers.length >= correctCount) {
-          return newAnswers;
+        // if (lastAnswers.length >= correctCount) {
+        //   return newAnswers;
+        // }
+        if (correctCount === 1) {
+          newAnswers[questionIndex] = [answerIndex];
+        } else {
+          newAnswers[questionIndex] = [...lastAnswers, answerIndex];
         }
-        newAnswers[questionIndex] = [...lastAnswers, answerIndex];
       }
       return newAnswers;
     });
@@ -108,21 +112,21 @@ export default function QuestionsList({
                   <button
                     key={answer.id}
                     className={cn(
-                      "flex overflow-hidden rounded-xl border border-black/20 hover:bg-black/10",
-                      answers[questionIndex]?.includes(answer.id) &&
-                        "bg-black/5",
+                      "flex items-center gap-2",
+                      // answers[questionIndex]?.includes(answer.id) &&
+                      //   "bg-black/5",
                     )}
                     onClick={() => answerClick(questionIndex, answerIndex)}
                   >
                     <div
                       className={cn(
-                        "flex h-full items-center justify-center border-r border-black/20 px-1",
+                        "flex size-8 max-h-8 min-h-8 min-w-8 max-w-8 items-center justify-center rounded-full bg-amber-100",
                         answers[questionIndex]?.includes(answer.id) &&
-                          "bg-black/5",
+                          "border-2 border-black/50",
                         checking &&
                           (answer.isCorrect
-                            ? "bg-green-100 text-green-500"
-                            : "bg-red-100 text-red-500"),
+                            ? "border-green-400 bg-green-100 text-green-500"
+                            : "border-red-400 bg-red-100 text-red-500"),
                       )}
                     >
                       {!checking ? (
@@ -133,7 +137,7 @@ export default function QuestionsList({
                         <X className="size-4" />
                       )}
                     </div>
-                    <div className="ml-2 p-1">{answer.text}</div>
+                    <div>{answer.text}</div>
                   </button>
                 ))}
               </div>
