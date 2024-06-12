@@ -121,7 +121,7 @@ export default function QuestionsList({
                     <div
                       className={cn(
                         "flex size-8 max-h-8 min-h-8 min-w-8 max-w-8 items-center justify-center rounded-full bg-amber-100",
-                        answers[questionIndex]?.includes(answer.id) &&
+                        answers[questionIndex]?.includes(answerIndex) &&
                           "border-2 border-black/50",
                         checking &&
                           (answer.isCorrect
